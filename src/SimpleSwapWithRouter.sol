@@ -18,7 +18,9 @@ contract SimpleSwapWithRouter {
     }
 
     function performSwapWithRouter(address[] calldata path, uint256 deadline) public {
-        // your code start here
+        IUniswapV2Router(router).swapExactETHForTokens{value: address(this).balance}(
+            1, path, address(this), deadline
+        );
     }
 
     receive() external payable {}

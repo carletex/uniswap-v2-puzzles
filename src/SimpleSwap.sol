@@ -23,6 +23,18 @@ contract SimpleSwap {
          *     data: leave it empty.
          */
 
-        // your code start here
+        uint256 amountIn = IERC20(weth).balanceOf(address(this));
+
+        // reserve0 = USDC (lower address), reserve1 = WETH
+        (uint112 reserve0, uint112 reserve1,) = IUniswapV2Pair(pool).getReserves();
+
+        // getAmountOut: applies 0.3% fee and solves x*y=k for amountOut.
+        uint256 amountInWithFee = amountIn * 997;
+        uint256 amountOut = (amountInWithFee * reserve0) / (reserve1 * 1000 + amountInWithFee);
+
+        IERC20(weth).transfer(pool, amountIn);
+
+        // We want USDC out (reserve0)
+        IUniswapV2Pair(pool).swap(amountOut, 0, address(this), "");
     }
 }
