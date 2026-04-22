@@ -23,17 +23,16 @@ contract AddLiquidTest is Test {
 
     function test_AddLiquidity() public {
         (uint256 reserve0, uint256 reserve1,) = IUniswapV2Pair(pool).getReserves();
-        uint256 _totalSupply = IUniswapV2Pair(pool).totalSupply();
 
         vm.prank(address(0xb0b));
         addLiquid.addLiquidity(usdc, weth, pool, reserve0, reserve1);
 
-        uint256 foo = (1000e6) - (IUniswapV2Pair(usdc).balanceOf(address(addLiquid)));
-
         uint256 puzzleBal = IUniswapV2Pair(pool).balanceOf(address(0xb0b));
 
-        uint256 bar = (foo * reserve1) / reserve0;
+        uint256 _totalSupply = IUniswapV2Pair(pool).totalSupply() - puzzleBal;
 
+        uint256 foo = (1000e6) - (IUniswapV2Pair(usdc).balanceOf(address(addLiquid)));
+        uint256 bar = (foo * reserve1) / reserve0;
         uint256 expectBal = min((foo * _totalSupply) / (reserve0), (bar * _totalSupply) / (reserve1));
 
         require(puzzleBal > 0, "No LP tokens minted");
