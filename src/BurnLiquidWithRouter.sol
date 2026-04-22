@@ -19,7 +19,11 @@ contract BurnLiquidWithRouter {
     }
 
     function burnLiquidityWithRouter(address pool, address usdc, address weth, uint256 deadline) public {
-        // your code start here
+        // Pair contract IS the LP token, approve the router to pull it.
+        uint256 liquidity = IERC20(pool).balanceOf(address(this));
+        IERC20(pool).approve(router, liquidity);
+
+        IUniswapV2Router(router).removeLiquidity(usdc, weth, liquidity, 1, 1, address(this), deadline);
     }
 }
 

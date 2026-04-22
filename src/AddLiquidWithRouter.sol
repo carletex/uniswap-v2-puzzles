@@ -2,6 +2,7 @@
 pragma solidity ^0.8.13;
 
 import "./interfaces/IUniswapV2Pair.sol";
+import "./interfaces/IERC20.sol";
 
 contract AddLiquidWithRouter {
     /**
@@ -19,7 +20,20 @@ contract AddLiquidWithRouter {
     }
 
     function addLiquidityWithRouter(address usdcAddress, uint256 deadline) public {
-        // your code start here
+        uint256 usdcAmount = 1000e6;
+        uint256 ethAmount = 1 ether;
+
+        IERC20(usdcAddress).approve(router, usdcAmount);
+
+        IUniswapV2Router(router).addLiquidityETH{value: ethAmount}(
+            usdcAddress,
+            usdcAmount,
+            // no slippage protection (but you oculd do 1% of slippage with usdAmount * 99 / 100)
+            1,
+            1,
+            msg.sender,
+            deadline
+        );
     }
 
     receive() external payable {}
