@@ -19,6 +19,8 @@ contract MyMevBot {
     IERC20 public immutable usdt;
     IUniswapV2Router public immutable router;
     bool public flashLoaned;
+    
+    uint256 constant BORROW = 10_000e6;
 
     constructor(address _flashLenderPool, address _weth, address _usdc, address _usdt, address _router) {
         flashLenderPool = IUniswapV3Pool(_flashLenderPool);
@@ -29,13 +31,24 @@ contract MyMevBot {
     }
 
     function performArbitrage() public {
-        // your code here
+        flashLenderPool.flash(address(this), BORROW, 0, "");
     }
 
-    function uniswapV3FlashCallback(uint256 _fee0, uint256, bytes calldata data) external {
+    function uniswapV3FlashCallback(uint256 _fee0, uint256, bytes calldata) external {
         callMeCallMe();
 
-        // your code start here
+        usdc.approve(address(router), BORROW);
+
+        // USDC -> WETH (fair pool) -> USDT (skewed, USDT cheap) -> USDC
+        address[] memory path = new address[](4);
+        path[0] = address(usdc);
+        path[1] = address(weth);
+        path[2] = address(usdt);
+        path[3] = address(usdc);
+
+        router.swapExactTokensForTokens(BORROW, 0, path, address(this), block.timestamp);
+
+        usdc.transfer(address(flashLenderPool), BORROW + _fee0);
     }
 
     function callMeCallMe() private {
