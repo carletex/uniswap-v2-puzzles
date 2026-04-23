@@ -23,6 +23,13 @@ contract ExactSwap {
          *     data: leave it empty.
          */
 
-        // your code start here
+        uint256 amount0Out = 1337e6;
+
+        (uint112 r0, uint112 r1,) = IUniswapV2Pair(pool).getReserves();
+        // pool.token0 = USDC (lower addr), token1 = WETH -> reserveIn = r1, reserveOut = r0
+        uint256 amountIn = (uint256(r1) * amount0Out * 1000) / ((uint256(r0) - amount0Out) * 997) + 1;
+
+        IERC20(weth).transfer(pool, amountIn);
+        IUniswapV2Pair(pool).swap(amount0Out, 0, address(this), "");
     }
 }
